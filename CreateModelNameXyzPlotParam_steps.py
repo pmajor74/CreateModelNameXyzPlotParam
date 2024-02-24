@@ -37,14 +37,20 @@ def create_radio_buttons():
     Radiobutton(root, text="Embedding", variable=fileTypeVar, value="embedding").grid(row=0, column=1, sticky='w')
 
 def drop(event):
-    # Use a regular expression to find all file paths enclosed in curly braces
-    file_paths = re.findall(r'\{(.*?)\}', event.data)
+    # Check if the event.data contains curly braces indicating the presence of spaces in file paths
+    if "{" in event.data and "}" in event.data:
+        # Use a regular expression to find all file paths enclosed in curly braces
+        file_paths = re.findall(r'\{(.*?)\}', event.data)
+    else:
+        # If no curly braces are found, split the string by spaces
+        file_paths = event.data.split()
 
     file_info = []
     for file_path in file_paths:
-        # No need to replace curly braces here since we're directly extracting the paths
-        mod_time = os.path.getmtime(file_path)
-        file_info.append((file_path, mod_time))
+        # Strip leading and trailing whitespace and braces, if any
+        cleaned_file_path = file_path.strip().strip("{}")
+        mod_time = os.path.getmtime(cleaned_file_path)
+        file_info.append((cleaned_file_path, mod_time))
 
     # Sort files by modification time (oldest first)
     file_info.sort(key=lambda x: x[1])
@@ -64,23 +70,6 @@ def drop(event):
     # Automatically copy the contents to clipboard
     copy_to_clipboard()
 
-    # Sort files by modification time (oldest first)
-    file_info.sort(key=lambda x: x[1])
-
-    # Use the selected fileType
-    selected_fileType = fileTypeVar.get()
-    
-    if selected_fileType == "lora":
-        file_names = ','.join(convert_filename_to_lora(os.path.basename(file_path)) for file_path, _ in file_info)
-    else:
-        # we have an embedding, quick and dirty for now, maybe upgrade to dropdown for different types of files
-        file_names = ','.join((os.path.basename(file_path)).split('.')[0] for file_path, _ in file_info)
-    
-    text_box.delete(1.0, END)  # Clear the text box before adding new content
-    text_box.insert(END, file_names)
-
-    # Automatically copy the contents to clipboard
-    copy_to_clipboard()
 
 def copy_to_clipboard():
     text_to_copy = text_box.get("1.0", END)
