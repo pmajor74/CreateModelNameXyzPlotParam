@@ -30,11 +30,7 @@ def convert_filename_to_lora(filename):
     if match:
         return match.group() 
     else:
-        return "PatternNotFound"
-
-def create_radio_buttons():
-    Radiobutton(root, text="Lora", variable=fileTypeVar, value="lora").grid(row=0, column=0, sticky='w')
-    Radiobutton(root, text="Embedding", variable=fileTypeVar, value="embedding").grid(row=0, column=1, sticky='w')
+        return ""
 
 def drop(event):
     # Check if the event.data contains curly braces indicating the presence of spaces in file paths
@@ -56,13 +52,9 @@ def drop(event):
     file_info.sort(key=lambda x: x[1])
 
     # Use the selected fileType
-    selected_fileType = fileTypeVar.get()
-    
-    if selected_fileType == "lora":
-        file_names = ','.join(convert_filename_to_lora(os.path.basename(file_path)) for file_path, _ in file_info)
-    else:
-        # If it's not "lora", process filenames for "embedding" or other types
-        file_names = ','.join((os.path.basename(file_path)).split('.')[0] for file_path, _ in file_info)
+    selected_fileType = fileTypeVar.get()    
+
+    file_names = ','.join(convert_filename_to_lora(os.path.basename(file_path)) for file_path, _ in file_info)
     
     text_box.delete(1.0, END)  # Clear the text box before adding new content
     text_box.insert(END, file_names)
@@ -93,8 +85,6 @@ root.geometry('500x500')
 
 # Define a StringVar to hold the selected fileType for radio buttons
 fileTypeVar = StringVar(value="lora")
-
-create_radio_buttons()
 
 # Create a "Copy" button and place it below the radio buttons
 copy_button = Button(root, text="Copy to Clipboard", command=copy_to_clipboard)
